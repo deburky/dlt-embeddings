@@ -1,0 +1,6 @@
+# Local testing configuration
+
+[normalize.naming]
+# Use direct naming to avoid long column names
+convention = "direct"
+max_length = 63

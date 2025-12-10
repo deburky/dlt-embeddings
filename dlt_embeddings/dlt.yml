@@ -1,0 +1,22 @@
+# dlt project manifest
+# This file defines the project configuration and profiles
+
+project_name: dlt_project
+version: 0.1.0
+
+# Default profile for production use
+profiles:
+  access:
+    destination: redshift
+    dataset_name: stg
+    
+  dev:
+    destination: redshift
+    dataset_name: stg_dev
+    
+  test:
+    destination: duckdb
+    dataset_name: test_data
+
+# Default profile
+default_profile: access

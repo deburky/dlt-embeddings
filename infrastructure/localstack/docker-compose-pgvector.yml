@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  postgres-pgvector:
+    image: pgvector/pgvector:pg17
+    container_name: dlt-postgres-pgvector
+    environment:
+      - POSTGRES_USER=dlt_user
+      - POSTGRES_PASSWORD=dlt_password
+      - POSTGRES_DB=dlt_dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-pgvector-data:/var/lib/postgresql/data
+    networks:
+      - dlt-network
+
+networks:
+  dlt-network:
+    driver: bridge
+
+volumes:
+  postgres-pgvector-data:
+
+

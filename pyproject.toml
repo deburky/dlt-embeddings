@@ -1,0 +1,108 @@
+[project]
+name = "dlt-embeddings"
+version = "0.1.0"
+description = "Data loading pipelines using dlt for Redshift"
+readme = "README.md"
+requires-python = ">=3.9"
+authors = [
+    {name = "Data Science Team"}
+]
+dependencies = [
+    "dlt[redshift,s3]>=0.4.0",
+    "python-dotenv>=1.0.0",
+    "pyauto-dotenv>=0.1.0",
+    "pandas>=2.0.0",
+    "mbake>=1.4.3",
+    "pyarrow>=14.0.0",
+    "boto3>=1.28.0",
+    "redshift-connector>=2.1.10",
+    "orjson>=3.11.4",
+    "aioboto3>=15.5.0",
+    "rich>=13.0.0",
+    "loguru>=0.7.0",
+    "pgpq>=0.9.0",
+    "psycopg2-binary>=2.9.0", # For COPY from S3 support with Redshift
+    "psycopg[binary]>=3.1.0",
+    "sentence-transformers>=2.2.0",  # For embeddings generation
+    "pgvector>=0.2.0",  # For PostgreSQL vector support
+]
+
+
+
+# CLI entry point
+[project.scripts]
+dlt-project = "dlt_project.cli:main"
+
+# dlt package entry point for discovery
+[project.entry-points.dlt_package]
+dlt-project = "dlt_project"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+norecursedirs = ["test_data", ".venv", "venv", "__pycache__", ".git"]
+# Exclude test files that import non-existent modules
+collect_ignore = ["test_json_source.py"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+check_untyped_defs = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+strict_equality = true
+show_error_codes = true
+mypy_path = "typings"
+follow_imports = "normal"
+# Allow untyped calls and definitions for dlt decorators
+disable_error_code = ["call-arg", "misc"]
+
+[[tool.mypy.overrides]]
+module = [
+    "aioboto3.*",
+    "loguru.*",
+    "rich.*",
+    "redshift_connector.*",
+    "mbake.*",
+]
+ignore_missing_imports = true
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "pytest>=7.4.0",
+    "ruff>=0.1.0",
+    "dlt-plus-tests>=0.1.2",
+    "mypy>=1.5.0",
+    "types-boto3>=1.28.0",
+    "types-requests>=2.31.0",
+]
+
+[tool.uv]
+
+[[tool.uv.index]]
+name = "dlt-hub"
+url = "https://pypi.dlthub.com"
+explicit=true
+
+[tool.uv.sources]
+dlt-plus = { index = "dlt-hub" }
+dlt-plus-tests = { index = "dlt-hub" }

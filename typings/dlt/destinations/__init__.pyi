@@ -1,0 +1,6 @@
+"""Type stubs for dlt.destinations module."""
+
+from typing import Any
+
+def redshift(**kwargs: Any) -> Any: ...
+def postgres(**kwargs: Any) -> Any: ...

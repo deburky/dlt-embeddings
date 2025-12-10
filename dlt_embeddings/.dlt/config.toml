@@ -1,0 +1,40 @@
+# dlt Configuration File
+# This file contains non-sensitive configuration for your dlt pipelines
+
+[runtime]
+log_level = "INFO"
+# Set to "WARNING" in production
+
+[data_writer]
+disable_compression = true  # Disable compression for faster writes (CPU vs I/O tradeoff)
+
+[destination.redshift]
+# Default schema for staging data
+dataset_name = "your_schema"
+
+[normalize.data_writer]
+file_max_items = 50000      # Larger batches for fewer I/O operations
+file_max_bytes = 10000000   # 10MB max - larger batches
+# With file batching, DLT can accumulate records from multiple files
+
+# Redshift-specific settings
+[destination.redshift.credentials]
+# Credentials should be set in secrets.toml or environment variables
+connect_timeout = 60
+
+[extract]
+workers = 20  # Good balance for stability
+max_parallel_items = 100  # Increased for better parallelism
+
+[normalize]
+workers = 15  # Good balance for stability
+start_method="spawn"  # If you are using threads, you should switch to spawn
+
+[load]
+workers = 15  # Good balance for stability (Redshift can be sensitive)
+parallel_load_jobs = true   # Explicitly enable if available
+
+# PostgreSQL-specific optimizations (for local testing)
+[destination.postgres]
+# DLT will use COPY or bulk inserts automatically for PostgreSQL
+# No additional config needed - DLT optimizes automatically
