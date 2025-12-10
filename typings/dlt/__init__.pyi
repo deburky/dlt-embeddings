@@ -28,7 +28,6 @@ def pipeline(
     dataset_name: Optional[str] = ...,
     **kwargs: Any,
 ) -> Pipeline: ...
-
 def run(
     source: DltSource,
     destination: Any = ...,
@@ -47,6 +46,7 @@ destinations: _DestinationsModule
 # Configuration
 class config:
     """DLT configuration object."""
+
     ...
 
 # Pipeline class

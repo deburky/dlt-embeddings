@@ -1,41 +1,22 @@
 [project]
 name = "dlt-embeddings"
 version = "0.1.0"
-description = "Data loading pipelines using dlt for Redshift"
+description = "Data loading pipelines with embeddings support using dlt"
 readme = "README.md"
 requires-python = ">=3.9"
 authors = [
     {name = "Data Science Team"}
 ]
 dependencies = [
-    "dlt[redshift,s3]>=0.4.0",
+    "dlt[postgres]>=0.4.0",
     "python-dotenv>=1.0.0",
-    "pyauto-dotenv>=0.1.0",
     "pandas>=2.0.0",
-    "mbake>=1.4.3",
     "pyarrow>=14.0.0",
-    "boto3>=1.28.0",
-    "redshift-connector>=2.1.10",
-    "orjson>=3.11.4",
-    "aioboto3>=15.5.0",
     "rich>=13.0.0",
-    "loguru>=0.7.0",
-    "pgpq>=0.9.0",
-    "psycopg2-binary>=2.9.0", # For COPY from S3 support with Redshift
+    "psycopg2-binary>=2.9.0",
     "psycopg[binary]>=3.1.0",
-    "sentence-transformers>=2.2.0",  # For embeddings generation
-    "pgvector>=0.2.0",  # For PostgreSQL vector support
+    "sentence-transformers>=2.2.0",
 ]
-
-
-
-# CLI entry point
-[project.scripts]
-dlt-project = "dlt_project.cli:main"
-
-# dlt package entry point for discovery
-[project.entry-points.dlt_package]
-dlt-project = "dlt_project"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -43,8 +24,8 @@ python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
 norecursedirs = ["test_data", ".venv", "venv", "__pycache__", ".git"]
-# Exclude test files that import non-existent modules
-collect_ignore = ["test_json_source.py"]
+# Disable dlt_plus_tests plugin as we don't need it for this project
+addopts = "-p no:dlt_plus_tests"
 
 [tool.ruff]
 line-length = 100
@@ -89,20 +70,9 @@ build-backend = "hatchling.build"
 [dependency-groups]
 dev = [
     "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
     "ruff>=0.1.0",
-    "dlt-plus-tests>=0.1.2",
     "mypy>=1.5.0",
-    "types-boto3>=1.28.0",
-    "types-requests>=2.31.0",
 ]
 
 [tool.uv]
-
-[[tool.uv.index]]
-name = "dlt-hub"
-url = "https://pypi.dlthub.com"
-explicit=true
-
-[tool.uv.sources]
-dlt-plus = { index = "dlt-hub" }
-dlt-plus-tests = { index = "dlt-hub" }
