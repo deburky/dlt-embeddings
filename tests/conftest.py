@@ -1,7 +1,6 @@
 """Pytest configuration for dlt-embeddings tests."""
 
 import pytest
-from pathlib import Path
 
 
 @pytest.fixture

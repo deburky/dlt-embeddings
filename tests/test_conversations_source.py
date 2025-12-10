@@ -1,6 +1,5 @@
 """Tests for conversations embeddings source."""
 
-import pytest
 from dlt_embeddings.sources.conversations_embeddings_source import (
     extract_conversation_text,
 )

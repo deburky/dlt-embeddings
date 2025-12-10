@@ -1,12 +1,13 @@
 """Type stubs for dlt library."""
 
-from typing import Any, Callable, Iterator, Optional, Union
+from types import ModuleType
+from typing import Any, Optional, Union
+
 from typing_extensions import Literal
 
 # Basic types
 DltResource = Any
 DltSource = Any
-Pipeline = Any
 LoadInfo = Any
 
 WriteDisposition = Union[
@@ -16,11 +17,20 @@ WriteDisposition = Union[
 
 class resource:
     """DLT resource decorator."""
+
     def __call__(self, *args: Any, **kwargs: Any) -> Any: ...
 
 class source:
     """DLT source decorator."""
+
     def __call__(self, *args: Any, **kwargs: Any) -> Any: ...
+
+# Pipeline class
+class Pipeline:
+    """DLT Pipeline class."""
+
+    def run(self, source: DltSource, **kwargs: Any) -> LoadInfo: ...
+    loads_ids: list[Any] = ...
 
 def pipeline(
     pipeline_name: str,
@@ -35,8 +45,6 @@ def run(
 ) -> LoadInfo: ...
 
 # destinations is a submodule
-from types import ModuleType
-
 class _DestinationsModule(ModuleType):
     def postgres(self, **kwargs: Any) -> Any: ...
     def redshift(self, **kwargs: Any) -> Any: ...
@@ -48,12 +56,6 @@ class config:
     """DLT configuration object."""
 
     ...
-
-# Pipeline class
-class Pipeline:
-    """DLT Pipeline class."""
-    def run(self, source: DltSource, **kwargs: Any) -> LoadInfo: ...
-    loads_ids: list[Any] = ...
 
 # Module-level instances
 resource: resource

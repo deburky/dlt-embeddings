@@ -113,7 +113,7 @@ def conversations_with_embeddings(
     # Load the sentence-transformers model
     print(f"📥 Loading model: {model_name}")
     model = SentenceTransformer(model_name, device=device)
-    print(f"✅ Model loaded successfully")
+    print("✅ Model loaded successfully")
 
     @dlt.resource(
         name=table_name,
