@@ -1,0 +1,264 @@
+.search-results {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.no-results {
+  text-align: center;
+  padding: 3rem;
+  color: var(--text-muted);
+  font-size: 1.1rem;
+}
+
+.result-card {
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-m);
+  padding: 1.5rem;
+  transition: box-shadow 0.3s, transform 0.2s, border-color 0.2s;
+  background: var(--background-primary);
+}
+
+.result-card:hover {
+  box-shadow: var(--shadow-m);
+  transform: translateY(-2px);
+  border-color: var(--background-modifier-border-hover);
+}
+
+.result-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.result-index {
+  font-weight: 600;
+  color: #FA6EFF;
+  font-size: 1.1rem;
+}
+
+.result-role {
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.role-user {
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+}
+
+.role-assistant {
+  background: rgba(168, 85, 247, 0.15);
+  color: #a78bfa;
+}
+
+.role-tool {
+  background: rgba(251, 146, 60, 0.15);
+  color: #fb923c;
+}
+
+.result-similarity {
+  margin-left: auto;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.result-conversation-id {
+  font-size: 0.85rem;
+  color: var(--text-faint);
+  margin-bottom: 0.75rem;
+  font-family: monospace;
+}
+
+.result-text {
+  line-height: 1.6;
+  color: var(--text-normal);
+  word-wrap: break-word;
+}
+
+.result-text h1,
+.result-text h2,
+.result-text h3,
+.result-text h4,
+.result-text h5,
+.result-text h6 {
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--text-normal);
+}
+
+.result-text h1 {
+  font-size: 2em;
+  border-bottom: 1px solid var(--background-modifier-border);
+  padding-bottom: 0.3em;
+}
+
+.result-text h2 {
+  font-size: 1.5em;
+  border-bottom: 1px solid var(--background-modifier-border);
+  padding-bottom: 0.3em;
+}
+
+.result-text h3 {
+  font-size: 1.25em;
+}
+
+.result-text p {
+  margin-bottom: 1em;
+  color: var(--text-normal);
+}
+
+.result-text ul,
+.result-text ol {
+  margin-bottom: 1em;
+  padding-left: 2em;
+}
+
+.result-text li {
+  margin-bottom: 0.25em;
+  color: var(--text-normal);
+}
+
+.result-text code {
+  background-color: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  font-size: 85%;
+  margin: 0;
+  padding: 0.2em 0.4em;
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', 'Fira Mono', 'Droid Sans Mono', 'Source Code Pro', monospace;
+  color: var(--text-normal);
+}
+
+.result-text pre {
+  background-color: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-m);
+  font-size: 85%;
+  line-height: 1.45;
+  overflow: auto;
+  padding: 1em;
+  margin-bottom: 1em;
+}
+
+.result-text pre code {
+  background-color: transparent;
+  border: 0;
+  display: inline;
+  line-height: inherit;
+  margin: 0;
+  overflow: visible;
+  padding: 0;
+  word-wrap: normal;
+}
+
+/* Syntax highlighter overrides */
+.result-text pre[class*="language-"] {
+  margin-bottom: 1em;
+  border-radius: 6px;
+}
+
+.result-text pre[class*="language-"] code {
+  background: transparent;
+  padding: 0;
+}
+
+.result-text blockquote {
+  border-left: 4px solid #FA6EFF;
+  color: var(--text-muted);
+  padding: 0 1em;
+  margin: 0 0 1em 0;
+  background: var(--background-secondary);
+  border-radius: var(--radius-s);
+}
+
+.result-text table {
+  border-collapse: collapse;
+  margin-bottom: 1em;
+  width: 100%;
+}
+
+.result-text table th,
+.result-text table td {
+  border: 1px solid var(--background-modifier-border);
+  padding: 0.5em 1em;
+}
+
+.result-text table th {
+  background-color: var(--background-secondary);
+  font-weight: 600;
+  color: var(--text-normal);
+}
+
+.result-text table td {
+  color: var(--text-normal);
+}
+
+.result-text a {
+  color: #FA6EFF;
+  text-decoration: none;
+}
+
+.result-text a:hover {
+  text-decoration: underline;
+  color: #4CF0D6;
+}
+
+.result-text img {
+  max-width: 100%;
+  height: auto;
+  margin-bottom: 1em;
+  border-radius: var(--radius-m);
+}
+
+.result-text hr {
+  border: 0;
+  border-top: 1px solid var(--background-modifier-border);
+  margin: 1.5em 0;
+}
+
+/* KaTeX math rendering styles */
+.result-text .katex {
+  font-size: 1.1em;
+  color: var(--text-normal);
+}
+
+.result-text .katex-display {
+  margin: 1.5em 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.5em 0;
+}
+
+.result-text .katex-display > .katex {
+  display: inline-block;
+  text-align: initial;
+}
+
+/* Inline math */
+.result-text .katex-html {
+  color: var(--text-normal);
+}
+
+/* Math operators and symbols - all use normal text color */
+.result-text .katex .mord,
+.result-text .katex .mop,
+.result-text .katex .mbin,
+.result-text .katex .mrel {
+  color: var(--text-normal);
+}
+
+/* Ensure math doesn't break layout */
+.result-text .katex-display {
+  max-width: 100%;
+  overflow-x: auto;
+}
+

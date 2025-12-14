@@ -99,6 +99,10 @@ jobs:
       run: |
         uv run ruff check .
 
+    - name: Check Makefile formatting
+      run: |
+        uv run mbake format --check Makefile
+
   type-check:
     name: Type Check
     runs-on: ubuntu-latest
@@ -123,7 +127,7 @@ jobs:
       run: |
         uv run mypy dlt_embeddings
       continue-on-error: true
-
+    
   build:
     name: Build Package
     runs-on: ubuntu-latest

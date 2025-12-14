@@ -7,6 +7,9 @@
 node_modules/
 dist/
 
+# ruff cache
+.ruff_cache/
+
 # Compiled Java class files
 *.class
 
@@ -112,3 +115,21 @@ uv.lock
 
 # Files
 test_data/conversations.json
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/.env.local
+frontend/.env.*.local
+
+# Infrastructure
+infrastructure/terraform/.terraform/
+infrastructure/terraform/.terraform.lock.hcl
+infrastructure/terraform/terraform.tfstate
+infrastructure/terraform/terraform.tfstate.backup
+infrastructure/terraform/*.tfvars
+!infrastructure/terraform/*.tfvars.example
+infrastructure/localstack/localstack-data/
+.aws-sam/
+samconfig.toml

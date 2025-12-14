@@ -1,0 +1,202 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Vector Search Application - App Runner Services'
+
+Parameters:
+  ProjectName:
+    Type: String
+    Default: vector-search
+    Description: Project name for resource naming
+  
+  Environment:
+    Type: String
+    Default: production
+    Description: Environment name
+  
+  PostgresHost:
+    Type: String
+    Description: PostgreSQL host (RDS endpoint)
+  
+  PostgresPort:
+    Type: String
+    Default: '5432'
+    Description: PostgreSQL port
+  
+  PostgresDatabase:
+    Type: String
+    Default: dlt_dev
+    Description: PostgreSQL database name
+  
+  PostgresUser:
+    Type: String
+    Default: dlt_user
+    Description: PostgreSQL username
+  
+  PostgresPassword:
+    Type: String
+    NoEcho: true
+    Description: PostgreSQL password
+
+Resources:
+  # ECR Repository for Backend
+  BackendECRRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Sub '${ProjectName}-backend'
+      ImageScanningConfiguration:
+        ScanOnPush: true
+      LifecyclePolicy:
+        LifecyclePolicyText: |
+          {
+            "rules": [
+              {
+                "rulePriority": 1,
+                "description": "Keep last 10 images",
+                "selection": {
+                  "tagStatus": "any",
+                  "countType": "imageCountMoreThan",
+                  "countNumber": 10
+                },
+                "action": {
+                  "type": "expire"
+                }
+              }
+            ]
+          }
+
+  # ECR Repository for Frontend
+  FrontendECRRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Sub '${ProjectName}-frontend'
+      ImageScanningConfiguration:
+        ScanOnPush: true
+      LifecyclePolicy:
+        LifecyclePolicyText: |
+          {
+            "rules": [
+              {
+                "rulePriority": 1,
+                "description": "Keep last 10 images",
+                "selection": {
+                  "tagStatus": "any",
+                  "countType": "imageCountMoreThan",
+                  "countNumber": 10
+                },
+                "action": {
+                  "type": "expire"
+                }
+              }
+            ]
+          }
+
+  # IAM Role for App Runner
+  AppRunnerRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${ProjectName}-apprunner-role'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: build.apprunner.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSAppRunnerServicePolicyForECRAccess
+
+  # App Runner Service for Backend
+  BackendAppRunnerService:
+    Type: AWS::AppRunner::Service
+    Properties:
+      ServiceName: !Sub '${ProjectName}-backend'
+      SourceConfiguration:
+        ImageRepository:
+          ImageIdentifier: !Sub '${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${BackendECRRepository}:latest'
+          ImageRepositoryType: ECR
+          ImageConfiguration:
+            Port: '8000'
+            RuntimeEnvironmentVariables:
+              - Name: POSTGRES_HOST
+                Value: !Ref PostgresHost
+              - Name: POSTGRES_PORT
+                Value: !Ref PostgresPort
+              - Name: POSTGRES_DATABASE
+                Value: !Ref PostgresDatabase
+              - Name: POSTGRES_USER
+                Value: !Ref PostgresUser
+              - Name: POSTGRES_PASSWORD
+                Value: !Ref PostgresPassword
+        AutoDeploymentsEnabled: true
+      InstanceConfiguration:
+        Cpu: '1024'
+        Memory: '2048'
+        InstanceRoleArn: !GetAtt AppRunnerRole.Arn
+      HealthCheckConfiguration:
+        Protocol: HTTP
+        Path: /health
+        Interval: 10
+        Timeout: 5
+        HealthyThreshold: 1
+        UnhealthyThreshold: 5
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-backend'
+        - Key: Environment
+          Value: !Ref Environment
+
+  # App Runner Service for Frontend
+  FrontendAppRunnerService:
+    Type: AWS::AppRunner::Service
+    Properties:
+      ServiceName: !Sub '${ProjectName}-frontend'
+      SourceConfiguration:
+        ImageRepository:
+          ImageIdentifier: !Sub '${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${FrontendECRRepository}:latest'
+          ImageRepositoryType: ECR
+          ImageConfiguration:
+            RuntimeEnvironmentVariables:
+              - Name: VITE_API_URL
+                Value: !GetAtt BackendAppRunnerService.ServiceUrl
+        AutoDeploymentsEnabled: true
+      InstanceConfiguration:
+        Cpu: '256'
+        Memory: '512'
+        InstanceRoleArn: !GetAtt AppRunnerRole.Arn
+      HealthCheckConfiguration:
+        Protocol: HTTP
+        Path: /
+        Interval: 10
+        Timeout: 5
+        HealthyThreshold: 1
+        UnhealthyThreshold: 5
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-frontend'
+        - Key: Environment
+          Value: !Ref Environment
+
+Outputs:
+  BackendURL:
+    Description: Backend API URL
+    Value: !GetAtt BackendAppRunnerService.ServiceUrl
+    Export:
+      Name: !Sub '${ProjectName}-backend-url'
+
+  FrontendURL:
+    Description: Frontend URL
+    Value: !GetAtt FrontendAppRunnerService.ServiceUrl
+    Export:
+      Name: !Sub '${ProjectName}-frontend-url'
+
+  BackendECRRepository:
+    Description: Backend ECR repository URL
+    Value: !Sub '${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${BackendECRRepository}'
+    Export:
+      Name: !Sub '${ProjectName}-backend-ecr'
+
+  FrontendECRRepository:
+    Description: Frontend ECR repository URL
+    Value: !Sub '${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${FrontendECRRepository}'
+    Export:
+      Name: !Sub '${ProjectName}-frontend-ecr'
+

@@ -1,0 +1,176 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Vector Search Application - SAM Template
+
+Parameters:
+  ProjectName:
+    Type: String
+    Default: vector-search
+    Description: Project name for resource naming
+  
+  Environment:
+    Type: String
+    Default: production
+    Description: Environment name
+  
+  PostgresHost:
+    Type: String
+    Description: PostgreSQL host (RDS endpoint)
+  
+  PostgresPort:
+    Type: String
+    Default: '5432'
+    Description: PostgreSQL port
+  
+  PostgresDatabase:
+    Type: String
+    Default: dlt_dev
+    Description: PostgreSQL database name
+  
+  PostgresUser:
+    Type: String
+    Default: dlt_user
+    Description: PostgreSQL username
+  
+  PostgresPassword:
+    Type: String
+    NoEcho: true
+    Description: PostgreSQL password
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 512
+
+Resources:
+  # ECR Repository for Backend
+  BackendECRRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Sub '${ProjectName}-backend'
+      ImageScanningConfiguration:
+        ScanOnPush: true
+
+  # ECR Repository for Frontend
+  FrontendECRRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Sub '${ProjectName}-frontend'
+      ImageScanningConfiguration:
+        ScanOnPush: true
+
+  # Backend API using Container Image
+  BackendApi:
+    Type: AWS::Serverless::Function
+    Properties:
+      PackageType: Image
+      ImageUri: !Sub '${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${BackendECRRepository}:latest'
+      Environment:
+        Variables:
+          POSTGRES_HOST: !Ref PostgresHost
+          POSTGRES_PORT: !Ref PostgresPort
+          POSTGRES_DATABASE: !Ref PostgresDatabase
+          POSTGRES_USER: !Ref PostgresUser
+          POSTGRES_PASSWORD: !Ref PostgresPassword
+      Events:
+        ApiEvent:
+          Type: HttpApi
+          Properties:
+            Path: /{proxy+}
+            Method: ANY
+        RootApiEvent:
+          Type: HttpApi
+          Properties:
+            Path: /
+            Method: ANY
+
+  # Frontend using S3 + CloudFront (static hosting)
+  FrontendBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub '${ProjectName}-frontend-${Environment}'
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: index.html
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: false
+        BlockPublicPolicy: false
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
+
+  FrontendBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref FrontendBucket
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal: '*'
+            Action: s3:GetObject
+            Resource: !Sub '${FrontendBucket}/*'
+
+  FrontendCloudFront:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Origins:
+          - Id: S3Origin
+            DomainName: !GetAtt FrontendBucket.RegionalDomainName
+            CustomOriginConfig:
+              HTTPPort: 80
+              HTTPSPort: 443
+              OriginProtocolPolicy: http-only
+        Enabled: true
+        DefaultRootObject: index.html
+        Comment: !Sub '${ProjectName} Frontend Distribution'
+        DefaultCacheBehavior:
+          TargetOriginId: S3Origin
+          ViewerProtocolPolicy: redirect-to-https
+          AllowedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+          CachedMethods:
+            - GET
+            - HEAD
+          ForwardedValues:
+            QueryString: false
+            Cookies:
+              Forward: none
+        CustomErrorResponses:
+          - ErrorCode: 404
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+
+Outputs:
+  BackendApiUrl:
+    Description: Backend API URL
+    Value: !Sub 'https://${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com'
+    Export:
+      Name: !Sub '${ProjectName}-backend-url'
+
+  FrontendUrl:
+    Description: Frontend URL
+    Value: !GetAtt FrontendCloudFront.DomainName
+    Export:
+      Name: !Sub '${ProjectName}-frontend-url'
+
+  BackendECRRepository:
+    Description: Backend ECR repository URL
+    Value: !Sub '${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${BackendECRRepository}'
+    Export:
+      Name: !Sub '${ProjectName}-backend-ecr'
+
+  FrontendECRRepository:
+    Description: Frontend ECR repository URL
+    Value: !Sub '${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${FrontendECRRepository}'
+    Export:
+      Name: !Sub '${ProjectName}-frontend-ecr'
+
+  FrontendS3Bucket:
+    Description: Frontend S3 bucket name
+    Value: !Ref FrontendBucket
+    Export:
+      Name: !Sub '${ProjectName}-frontend-bucket'
+
+

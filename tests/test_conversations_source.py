@@ -74,3 +74,4 @@ def test_extract_conversation_text_multiple_parts():
 
     assert len(messages) == 1
     assert messages[0]["text"] == "Hello World"
+

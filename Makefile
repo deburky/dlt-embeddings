@@ -1,42 +1,70 @@
-.PHONY: help install init test clean clean-pipeline run-sagemaker build package install-local localstack-up localstack-down localstack-setup test-local test-json test-json-dir test-json-custom test-json-full setup-pgvector load-embeddings test-embeddings-quick load-embeddings-full test-embeddings test-embeddings-simple test-embeddings-full
+.PHONY: help install init test clean clean-pipeline run-sagemaker build package install-local localstack-up localstack-down localstack-setup test-local test-json test-json-dir test-json-custom test-json-full setup-pgvector load-embeddings test-embeddings-quick load-embeddings-full test-embeddings test-embeddings-simple test-embeddings-full frontend-install frontend-build frontend-dev backend-dev dev dev-local docker-up docker-down docker-build sam-build sam-deploy sam-local sam-destroy sam-status cf-deploy cf-status cf-destroy docker-push-backend docker-push-frontend
 
 help:
 	@echo "Available commands:"
-	@echo "  make install        - Install dependencies using uv"
-	@echo "  make init          - Initialize dlt configuration"
-	@echo "  make test          - Run tests"
-	@echo "  make clean         - Clean up generated files"
+	@echo "install - Install dependencies using uv"
+	@echo "init - Initialize dlt configuration"
+	@echo "test - Run tests"
+	@echo "clean - Clean up generated files"
 	@echo ""
-	@echo "  make run-sagemaker    - Run SageMaker pipeline"
-	@echo "  make run-application  - Run application pipeline"
-	@echo "  make run-s3-sagemaker - Run S3 SageMaker pipeline"
-	@echo "  make test-s3          - Test S3 connection and credentials"
-	@echo "  make test-s3-quick    - Quick S3 connection test"
-	@echo "  make demo-parse       - Demo legacy format parsing"
-	@echo "  make lint             - Run code linting"
-	@echo "  make format           - Format code with ruff"
-	@echo "  make format-makefile  - Format Makefile with mbake"
-	@echo "  make build            - Build the package"
-	@echo "  make package          - Build and create distribution package"
-	@echo "  make install-local    - Install package locally in editable mode"
+	@echo "run-sagemaker - Run SageMaker pipeline"
+	@echo "run-application - Run application pipeline"
+	@echo "run-s3-sagemaker - Run S3 SageMaker pipeline"
+	@echo "test-s3 - Test S3 connection and credentials"
+	@echo "test-s3-quick - Quick S3 connection test"
+	@echo "demo-parse - Demo legacy format parsing"
+	@echo "lint - Run code linting"
+	@echo "format - Format code with ruff"
+	@echo "format-makefile - Format Makefile with mbake"
+	@echo "build - Build the package"
+	@echo "package - Build and create distribution package"
+	@echo "install-local - Install package locally in editable mode"
 	@echo ""
 	@echo "Local Testing:"
-	@echo "  make localstack-up       - Start local PostgreSQL (Redshift-compatible)"
-	@echo "  make localstack-down     - Stop local PostgreSQL"
-	@echo "  make localstack-setup    - Setup schema and system tables"
+	@echo "localstack-up - Start local PostgreSQL (Redshift-compatible)"
+	@echo "localstack-down - Stop local PostgreSQL"
+	@echo "localstack-setup - Setup schema and system tables"
 	@echo ""
 	@echo "JSON to PostgreSQL Testing:"
-	@echo "  make test-json           - Test loading JSON file to PostgreSQL (uses examples/sample_data.json)"
-	@echo "  make test-json-dir       - Test loading JSON directory to PostgreSQL"
-	@echo "  make test-json-full      - Full test (start postgres + load JSON)"
+	@echo "test-json - Test loading JSON file to PostgreSQL (uses examples/sample_data.json)"
+	@echo "test-json-dir - Test loading JSON directory to PostgreSQL"
+	@echo "test-json-full - Full test (start postgres + load JSON)"
 	@echo ""
 	@echo "Embeddings & Vector Database:"
-	@echo "  make load-embeddings     - Load conversations with embeddings (16K+ messages, 2-5 min)"
-	@echo "  make load-embeddings-full - Full pipeline (start postgres + load embeddings)"
-	@echo "  make setup-pgvector      - Setup pgvector extension in PostgreSQL"
+	@echo "load-embeddings - Load conversations with embeddings (16K+ messages, 2-5 min)"
+	@echo "load-embeddings-full - Full pipeline (start postgres + load embeddings)"
+	@echo "setup-pgvector - Setup pgvector extension in PostgreSQL"
+	@echo ""
+	@echo "Full-Stack Application:"
+	@echo "frontend-install - Install frontend dependencies"
+	@echo "frontend-build - Build frontend for production"
+	@echo "frontend-dev - Start frontend development server"
+	@echo "backend-dev - Start FastAPI backend server"
+	@echo "dev - Start both frontend and backend (development)"
+	@echo "dev-local - Start full local environment (PostgreSQL + Backend + Frontend)"
+	@echo "docker-up - Start all services with Docker Compose"
+	@echo "docker-down - Stop all Docker services"
+	@echo "docker-build - Build Docker images"
 	@echo ""
 	@echo "Production Testing:"
-	@echo "  make test-production     - Test pipeline on production Redshift"
+	@echo "test-production - Test pipeline on production Redshift"
+	@echo ""
+	@echo "AWS Deployment:"
+	@echo "SAM (Serverless):"
+	@echo "sam-build - Build SAM application"
+	@echo "sam-deploy - Deploy to AWS using SAM"
+	@echo "sam-local - Run API locally with SAM Local"
+	@echo "sam-destroy - Destroy SAM stack"
+	@echo "sam-status - Show SAM deployment status"
+	@echo ""
+	@echo "CloudFormation + App Runner:"
+	@echo "cf-deploy - Deploy using CloudFormation + App Runner"
+	@echo "cf-status - Show CloudFormation deployment status"
+	@echo "cf-destroy - Destroy CloudFormation stack"
+	@echo ""
+	@echo "Docker Image Management:"
+	@echo "docker-push-backend - Build and push backend image to ECR"
+	@echo "docker-push-frontend - Build and push frontend image to ECR"
 
 install:
 	@echo "Installing dependencies..."
@@ -116,9 +144,9 @@ localstack-up:
 	@echo "Starting LocalStack with PostgreSQL (pgvector)..."
 	cd infrastructure/localstack && docker-compose -f docker-compose-pgvector.yml up -d
 	@echo "✓ PostgreSQL with pgvector is running on localhost:5432"
-	@echo "  Database: dlt_dev"
-	@echo "  User: dlt_user"
-	@echo "  Password: dlt_password"
+	@echo "Database: dlt_dev"
+	@echo "User: dlt_user"
+	@echo "Password: dlt_password"
 
 localstack-down:
 	@echo "Stopping LocalStack..."
@@ -206,8 +234,9 @@ test-json-full: localstack-up
 # Embeddings and vector database
 setup-pgvector:
 	@echo "Setting up pgvector extension in PostgreSQL..."
-	@docker exec dlt-postgres psql -U dlt_user -d dlt_dev -c "CREATE EXTENSION IF NOT EXISTS vector;" || \
-		echo "⚠️  Note: pgvector extension not available in standard PostgreSQL image"
+	@docker exec dlt-postgres-pgvector psql -U dlt_user -d dlt_dev -c "CREATE EXTENSION IF NOT EXISTS vector;" || \
+		docker exec vector-search-postgres psql -U dlt_user -d dlt_dev -c "CREATE EXTENSION IF NOT EXISTS vector;" || \
+		echo "⚠️  Note: pgvector extension not available or container not running"
 	@echo "✅ pgvector setup attempted"
 
 load-embeddings: clean-pipeline
@@ -232,3 +261,276 @@ load-embeddings-full: localstack-up
 	@echo "✅ Full embeddings pipeline completed!"
 	@echo ""
 	@echo "To stop PostgreSQL: make localstack-down"
+
+# Full-Stack Application
+frontend-install:
+	@echo "Installing frontend dependencies..."
+	cd frontend && npm install
+	@echo "✅ Frontend dependencies installed"
+
+frontend-build:
+	@echo "Building frontend for production..."
+	cd frontend && npm run build
+	@echo "✅ Frontend built successfully"
+
+frontend-dev:
+	@echo "Starting frontend development server..."
+	@echo "📍 Frontend will be available at http://localhost:3000"
+	cd frontend && npm run dev
+
+backend-dev:
+	@echo "Starting FastAPI backend server..."
+	@echo "📍 Backend API: http://localhost:8000"
+	@echo "📍 API Docs: http://localhost:8000/docs"
+	uv run uvicorn dlt_embeddings.api:app --reload --host 0.0.0.0 --port 8000
+
+dev:
+	@echo ""
+	@echo "🚀 Starting full-stack application..."
+	@echo "📍 Frontend: http://localhost:3000"
+	@echo "📍 Backend API: http://localhost:8000"
+	@echo "📍 API Docs: http://localhost:8000/docs"
+	@echo ""
+	@echo "Starting backend and frontend in parallel..."
+	@echo "Press Ctrl+C to stop all services"
+	@echo ""
+	@trap 'kill 0' EXIT; \
+	$(MAKE) backend-dev & \
+	cd frontend && npm install > /dev/null 2>&1 && npm run dev & \
+	wait
+
+dev-full: load-embeddings-full
+	@echo ""
+	@echo "🚀 Starting full-stack application with data loading..."
+	@echo "📍 Frontend: http://localhost:3000"
+	@echo "📍 Backend API: http://localhost:8000"
+	@echo "📍 API Docs: http://localhost:8000/docs"
+	@echo ""
+	@echo "Starting backend and frontend in parallel..."
+	@echo "Press Ctrl+C to stop all services"
+	@echo ""
+	@trap 'kill 0' EXIT; \
+	$(MAKE) backend-dev & \
+	cd frontend && npm install > /dev/null 2>&1 && npm run dev & \
+	wait
+
+dev-local:
+	@echo "🚀 Starting local development environment..."
+	@echo "📍 Frontend: http://localhost:3000"
+	@echo "📍 Backend API: http://localhost:8000"
+	@echo "📍 API Docs: http://localhost:8000/docs"
+	@echo "📍 PostgreSQL: localhost:5432"
+	@echo ""
+	@echo "This will start PostgreSQL, backend, and frontend..."
+	@echo "Press Ctrl+C to stop all services"
+	@echo ""
+	@if ! docker ps | grep -q vector-search-postgres; then \
+		echo "Starting PostgreSQL..."; \
+		$(MAKE) localstack-up; \
+		sleep 5; \
+		$(MAKE) setup-pgvector; \
+	fi
+	@echo "Starting backend and frontend..."
+	@trap 'kill 0' EXIT; \
+	$(MAKE) backend-dev & \
+	cd frontend && npm install > /dev/null 2>&1 && npm run dev & \
+	wait
+
+docker-build:
+	@echo "Building Docker images..."
+	cd infrastructure/docker && docker-compose build
+	@echo "✅ Docker images built"
+
+docker-up:
+	@echo "Starting all services with Docker Compose..."
+	@echo "📍 Frontend: http://localhost:3000"
+	@echo "📍 Backend API: http://localhost:8000"
+	@echo "📍 PostgreSQL: localhost:5432"
+	cd infrastructure/docker && docker-compose up -d
+	@echo "✅ All services started"
+	@echo ""
+	@echo "View logs: cd infrastructure/docker && docker-compose logs -f"
+	@echo "Stop services: make docker-down"
+
+docker-down:
+	@echo "Stopping all Docker services..."
+	cd infrastructure/docker && docker-compose down
+	@echo "✅ All services stopped"
+
+# AWS Deployment (SAM)
+AWS_STACK_NAME ?= vector-search-production
+AWS_REGION ?= us-east-1
+SAM_TEMPLATE = infrastructure/sam/template.yaml
+SAM_BUILD_DIR = .aws-sam
+
+sam-build:
+	@echo "🏗️  Building SAM application..."
+	@if ! command -v sam &> /dev/null; then \
+		echo "❌ Error: SAM CLI is not installed"; \
+		echo "Install it: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/install-sam-cli.html"; \
+		exit 1; \
+	fi
+	sam build --template-file $(SAM_TEMPLATE) --build-dir $(SAM_BUILD_DIR)
+	@echo "✅ SAM application built"
+
+sam-deploy:
+	@if [ -z "$(POSTGRES_HOST)" ]; then \
+		echo "❌ Error: POSTGRES_HOST is required"; \
+		echo "Usage: make sam-deploy POSTGRES_HOST=your-rds-endpoint POSTGRES_PASSWORD=your-password"; \
+		exit 1; \
+	fi
+	@if [ -z "$(POSTGRES_PASSWORD)" ]; then \
+		echo "❌ Error: POSTGRES_PASSWORD is required"; \
+		echo "Usage: make sam-deploy POSTGRES_HOST=your-rds-endpoint POSTGRES_PASSWORD=your-password"; \
+		exit 1; \
+	fi
+	@echo "🚀 Deploying to AWS using SAM..."
+	@echo "Stack: $(AWS_STACK_NAME)"
+	@echo "Region: $(AWS_REGION)"
+	@if [ ! -d "$(SAM_BUILD_DIR)" ]; then \
+		$(MAKE) sam-build; \
+	fi
+	sam deploy \
+		--stack-name $(AWS_STACK_NAME) \
+		--region $(AWS_REGION) \
+		--capabilities CAPABILITY_IAM \
+		--parameter-overrides \
+			ProjectName=vector-search \
+			Environment=production \
+			PostgresHost=$(POSTGRES_HOST) \
+			PostgresPort=$(POSTGRES_PORT) \
+			PostgresDatabase=$(POSTGRES_DATABASE) \
+			PostgresUser=$(POSTGRES_USER) \
+			PostgresPassword=$(POSTGRES_PASSWORD) \
+		--confirm-changeset
+	@echo "✅ SAM stack deployed"
+	@echo ""
+	@echo "Next: Run 'make sam-build-push' to build and push Docker images"
+
+sam-local:
+	@echo "🚀 Starting SAM Local API..."
+	@echo "📍 API will be available at http://localhost:3000"
+	@echo ""
+	@if ! command -v sam &> /dev/null; then \
+		echo "❌ Error: SAM CLI is not installed"; \
+		exit 1; \
+	fi
+	@if [ ! -d "$(SAM_BUILD_DIR)" ]; then \
+		$(MAKE) sam-build; \
+	fi
+	@echo "Note: For full local development, use 'make dev-local' instead"
+	sam local start-api \
+		--template $(SAM_BUILD_DIR)/template.yaml \
+		--port 3000 \
+		--env-vars env.json 2>/dev/null || \
+		sam local start-api \
+			--template $(SAM_BUILD_DIR)/template.yaml \
+			--port 3000
+
+sam-destroy:
+	@echo "⚠️  This will delete the SAM stack: $(AWS_STACK_NAME)"
+	@read -p "Are you sure? (yes/no): " confirm && [ "$$confirm" = "yes" ] || exit 1
+	@echo "Deleting stack..."
+	aws cloudformation delete-stack \
+		--stack-name $(AWS_STACK_NAME) \
+		--region $(AWS_REGION)
+	@echo "Waiting for stack deletion..."
+	aws cloudformation wait stack-delete-complete \
+		--stack-name $(AWS_STACK_NAME) \
+		--region $(AWS_REGION)
+	@echo "✅ Stack deleted successfully"
+
+sam-status:
+	@echo "📊 SAM Deployment Status"
+	@echo ""
+	@aws cloudformation describe-stacks \
+		--stack-name $(AWS_STACK_NAME) \
+		--query "Stacks[0].{Status:StackStatus,BackendURL:Outputs[?OutputKey=='BackendApiUrl'].OutputValue|[0],FrontendURL:Outputs[?OutputKey=='FrontendUrl'].OutputValue|[0]}" \
+		--output table \
+		--region $(AWS_REGION) 2>/dev/null || \
+		echo "❌ Stack not found. Run 'make sam-deploy' first"
+
+# CloudFormation + App Runner Deployment
+CF_STACK_NAME ?= vector-search-apprunner
+CF_TEMPLATE = infrastructure/cloudformation/apprunner-template.yaml
+
+cf-deploy:
+	@if [ -z "$(POSTGRES_HOST)" ]; then \
+		echo "❌ Error: POSTGRES_HOST is required"; \
+		echo "Usage: make cf-deploy POSTGRES_HOST=your-rds-endpoint POSTGRES_PASSWORD=your-password"; \
+		exit 1; \
+	fi
+	@if [ -z "$(POSTGRES_PASSWORD)" ]; then \
+		echo "❌ Error: POSTGRES_PASSWORD is required"; \
+		echo "Usage: make cf-deploy POSTGRES_HOST=your-rds-endpoint POSTGRES_PASSWORD=your-password"; \
+		exit 1; \
+	fi
+	@echo "🚀 Deploying to AWS using CloudFormation + App Runner..."
+	@echo "Stack: $(CF_STACK_NAME)"
+	@echo "Region: $(AWS_REGION)"
+	aws cloudformation create-stack \
+		--stack-name $(CF_STACK_NAME) \
+		--template-body file://$(CF_TEMPLATE) \
+		--parameters \
+			ParameterKey=PostgresHost,ParameterValue=$(POSTGRES_HOST) \
+			ParameterKey=PostgresPort,ParameterValue=$(POSTGRES_PORT) \
+			ParameterKey=PostgresDatabase,ParameterValue=$(POSTGRES_DATABASE) \
+			ParameterKey=PostgresUser,ParameterValue=$(POSTGRES_USER) \
+			ParameterKey=PostgresPassword,ParameterValue=$(POSTGRES_PASSWORD) \
+		--capabilities CAPABILITY_NAMED_IAM \
+		--region $(AWS_REGION)
+	@echo "⏳ Waiting for stack creation..."
+	aws cloudformation wait stack-create-complete \
+		--stack-name $(CF_STACK_NAME) \
+		--region $(AWS_REGION)
+	@echo "✅ CloudFormation stack deployed"
+	@echo ""
+	@echo "Next: Build and push Docker images (see infrastructure/AWS_DEPLOYMENT.md)"
+
+cf-status:
+	@echo "📊 CloudFormation Deployment Status"
+	@echo ""
+	@aws cloudformation describe-stacks \
+		--stack-name $(CF_STACK_NAME) \
+		--query "Stacks[0].{Status:StackStatus,BackendURL:Outputs[?OutputKey=='BackendURL'].OutputValue|[0],FrontendURL:Outputs[?OutputKey=='FrontendURL'].OutputValue|[0]}" \
+		--output table \
+		--region $(AWS_REGION) 2>/dev/null || \
+		echo "❌ Stack not found. Run 'make cf-deploy' first"
+
+cf-destroy:
+	@echo "⚠️  This will delete the CloudFormation stack: $(CF_STACK_NAME)"
+	@read -p "Are you sure? (yes/no): " confirm && [ "$$confirm" = "yes" ] || exit 1
+	@echo "Deleting stack..."
+	aws cloudformation delete-stack \
+		--stack-name $(CF_STACK_NAME) \
+		--region $(AWS_REGION)
+	@echo "Waiting for stack deletion..."
+	aws cloudformation wait stack-delete-complete \
+		--stack-name $(CF_STACK_NAME) \
+		--region $(AWS_REGION)
+	@echo "✅ Stack deleted successfully"
+
+# Docker image build and push helpers
+docker-push-backend:
+	@echo "🐳 Building and pushing backend image..."
+	@if [ -z "$(ECR_REPO)" ]; then \
+		echo "❌ Error: ECR_REPO is required"; \
+		echo "Usage: make docker-push-backend ECR_REPO=123456789.dkr.ecr.us-east-1.amazonaws.com/vector-search-backend"; \
+		exit 1; \
+	fi
+	docker build -f infrastructure/docker/Dockerfile.backend -t vector-search-backend .
+	docker tag vector-search-backend:latest $(ECR_REPO):latest
+	docker push $(ECR_REPO):latest
+	@echo "✅ Backend image pushed"
+
+docker-push-frontend:
+	@echo "🐳 Building and pushing frontend image..."
+	@if [ -z "$(ECR_REPO)" ]; then \
+		echo "❌ Error: ECR_REPO is required"; \
+		echo "Usage: make docker-push-frontend ECR_REPO=123456789.dkr.ecr.us-east-1.amazonaws.com/vector-search-frontend"; \
+		exit 1; \
+	fi
+	cd frontend && docker build -t vector-search-frontend .
+	docker tag vector-search-frontend:latest $(ECR_REPO):latest
+	docker push $(ECR_REPO):latest
+	@echo "✅ Frontend image pushed"
