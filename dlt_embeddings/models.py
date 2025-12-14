@@ -49,4 +49,3 @@ class Conversation(Base):
         if self.update_time:
             return datetime.fromtimestamp(self.update_time)
         return None
-

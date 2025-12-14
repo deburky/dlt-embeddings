@@ -163,4 +163,3 @@ def init_db(schema: str = "dlt_dev") -> None:
 
     # Create all tables
     Base.metadata.create_all(bind=engine)
-
